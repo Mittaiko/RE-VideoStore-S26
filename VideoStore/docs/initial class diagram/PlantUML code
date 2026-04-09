@@ -1,0 +1,38 @@
+@startuml VideoStore_Initial
+
+skinparam classAttributeIconSize 0
+
+class Customer {
+  - name: str
+  - rentals: List[Rental]
+  + __init__(name: str)
+  + get_name(): str
+  + add_rental(rental: Rental): void
+  + statement(): str
+}
+
+class Rental {
+  - _movie: Movie
+  - _days: int
+  + __init__(movie: Movie, days_rented: int)
+  + get_days_rented(): int
+  + get_movie(): Movie
+  + get_charge(): float
+}
+
+class Movie {
+  + {static} REGULAR: int = 0
+  + {static} NEW_RELEASE: int = 1
+  + {static} CHILDRENS: int = 2
+  - _title: str
+  - _price_code: int
+  + __init__(title: str, price_code: int)
+  + get_title(): str
+  + get_price_code(): int
+  + set_price_code(new_price_code: int): void
+}
+
+Customer "1" o-- "0..*" Rental : has >
+Rental "1" --> "1" Movie : references >
+
+@enduml
