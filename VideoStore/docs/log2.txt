@@ -1,0 +1,82 @@
+Me: Here is question 2 which basically explains that  there needs to be unit tests to be completed for the class Rental.
+
+Agent: Before refactoring, unit tests need to be set up. Most of this is completed, but the unit testing for the class Rental is not done. Finish this, following the examples from the other unit tests. At this point you may also add test cases to the other unit tests.4:09 PMLooking at rental_t.py, it currently has an empty main() with a TODO comment and no actual test cases. Looking at customer_t.py and movie_t.py for patterns, here's what I'd generate for you:
+python# Rental_t.py
+# Test program for class Rental
+
+import unittest
+from Rental import Rental
+from Movie import Movie
+
+class TestRental(unittest.TestCase):
+
+    def test_regular_short(self):
+        # Regular movie, 1 day (flat rate, no extra charge)
+        movie = Movie("A", Movie.REGULAR)
+        rental = Rental(movie, 1)
+        self.assertEqual(rental.get_movie(), movie)
+        self.assertEqual(rental.get_days_rented(), 1)
+        self.assertAlmostEqual(rental.get_charge(), 2.0)
+
+    def test_regular_long(self):
+        # Regular movie, 4 days (2 base + 2 extra days * 1.5)
+        movie = Movie("A", Movie.REGULAR)
+        rental = Rental(movie, 4)
+        self.assertAlmostEqual(rental.get_charge(), 5.0)
+
+    def test_regular_boundary(self):
+        # Regular movie, exactly 2 days — boundary, no extra charge yet
+        movie = Movie("A", Movie.REGULAR)
+        rental = Rental(movie, 2)
+        self.assertAlmostEqual(rental.get_charge(), 2.0)
+
+    def test_new_release_one_day(self):
+        # New release, 1 day (1 * 3)
+        movie = Movie("B", Movie.NEW_RELEASE)
+        rental = Rental(movie, 1)
+        self.assertAlmostEqual(rental.get_charge(), 3.0)
+
+    def test_new_release_three_days(self):
+        # New release, 3 days (3 * 3)
+        movie = Movie("B", Movie.NEW_RELEASE)
+        rental = Rental(movie, 3)
+        self.assertAlmostEqual(rental.get_charge(), 9.0)
+
+    def test_childrens_short(self):
+        # Children's movie, 2 days (flat rate, no extra charge)
+        movie = Movie("C", Movie.CHILDRENS)
+        rental = Rental(movie, 2)
+        self.assertAlmostEqual(rental.get_charge(), 1.5)
+
+    def test_childrens_boundary(self):
+        # Children's movie, exactly 3 days — boundary, no extra charge yet
+        movie = Movie("C", Movie.CHILDRENS)
+        rental = Rental(movie, 3)
+        self.assertAlmostEqual(rental.get_charge(), 1.5)
+
+    def test_childrens_long(self):
+        # Children's movie, 6 days (1.5 base + 3 extra days * 1.5)
+        movie = Movie("C", Movie.CHILDRENS)
+        rental = Rental(movie, 6)
+        self.assertAlmostEqual(rental.get_charge(), 6.0)
+
+    def test_get_movie(self):
+        # Verify get_movie returns the correct Movie object
+        movie = Movie("Lord of the Rings", Movie.REGULAR)
+        rental = Rental(movie, 5)
+        self.assertEqual(rental.get_movie(), movie)
+        self.assertEqual(rental.get_movie().get_title(), "Lord of the Rings")
+
+    def test_get_days_rented(self):
+        # Verify get_days_rented returns the correct value
+        movie = Movie("A", Movie.NEW_RELEASE)
+        rental = Rental(movie, 7)
+        self.assertEqual(rental.get_days_rented(), 7)
+
+if __name__ == "__main__":
+    unittest.main()
+
+Before you paste this in — here's what to evaluate:
+The charge math I used comes directly from Rental.get_charge() in the code you shared. You should verify each expected value yourself:
+TypeDaysExpectedFormulaRegular12.0flat $2, no extra (≤2 days)Regular22.0flat $2, boundaryRegular45.02 + (4-2)×1.5New Release13.01×3New Release39.03×3Children's21.5flat $1.5, no extra (≤3 days)Children's31.5flat $1.5, boundaryChildren's66.01.5 + (6-3)×1.5
+The boundary cases (Regular at 2 days, Children's at 3 days) are particularly important — those are the exact thresholds in the if statements in get_charge(). These are easy places for bugs to hide during refactoring.
