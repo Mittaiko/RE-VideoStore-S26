@@ -75,6 +75,18 @@ class TestRental(unittest.TestCase):
         rental = Rental(movie, 7)
         self.assertEqual(rental.get_days_rented(), 7)
 
+    def test_regular_boundary_plus_one(self):
+        # 3 days — first day extra charges kick in
+        movie = Movie("A", Movie.REGULAR)
+        rental = Rental(movie, 3)
+        self.assertAlmostEqual(rental.get_charge(), 3.5)  # 2 + 1*1.5
+
+    def test_childrens_boundary_plus_one(self):
+        # 4 days — first day extra charges kick in
+        movie = Movie("C", Movie.CHILDRENS)
+        rental = Rental(movie, 4)
+        self.assertAlmostEqual(rental.get_charge(), 3.0)  # 1.5 + 1*1.5
+
 if __name__ == "__main__":
     unittest.main()
     
