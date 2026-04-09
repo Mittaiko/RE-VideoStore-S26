@@ -1,0 +1,94 @@
+Me: Here is question 3, which wants to determine frequent renter points using extract method refactoring:
+
+Agent: Determining the frequent renter points should probably be a responsibility of class Rental rather than class Customer. Using a Extract method refactoring, create a new method getFrequentRenterPoints in class Rental and call it in method statement to get the frequent renter points.4:41 PMLooking at the code, the frequent renter points logic currently lives in Customer.statement():
+pythonfrequent_renter_points += 1
+if rental.get_movie().get_price_code() == Movie.NEW_RELEASE and rental.get_days_rented() > 1:
+    frequent_renter_points += 1
+The fix is straightforward — extract that logic into Rental, then call it from Customer. Here are the two changes:
+Rental.py — add the new method:
+python# Rental.py
+from Movie import Movie
+
+class Rental:
+    def __init__(self, movie, days_rented):
+        self._movie = movie
+        self._days = days_rented
+
+    def get_days_rented(self):
+        return self._days
+
+    def get_movie(self):
+        return self._movie
+
+    def get_charge(self):
+        this_amount = 0
+        price_code = self.get_movie().get_price_code()
+        if price_code == Movie.REGULAR:
+            this_amount += 2
+            if self.get_days_rented() > 2:
+                this_amount += (self.get_days_rented() - 2) * 1.5
+        elif price_code == Movie.NEW_RELEASE:
+            this_amount += self.get_days_rented() * 3
+        elif price_code == Movie.CHILDRENS:
+            this_amount += 1.5
+            if self.get_days_rented() > 3:
+                this_amount += (self.get_days_rented() - 3) * 1.5
+        return this_amount
+
+    def get_frequent_renter_points(self) -> int:
+        """Returns frequent renter points earned for this rental.
+        New releases rented for more than one day earn a bonus point."""
+        if self.get_movie().get_price_code() == Movie.NEW_RELEASE and self.get_days_rented() > 1:
+            return 2
+        return 1
+Customer.py — replace the inline logic with a call to the new method:
+python# Customer.py
+from typing import List
+from Rental import Rental
+from Movie import Movie
+
+class Customer:
+    def __init__(self, name: str):
+        self.name = name
+        self.rentals: List[Rental] = []
+
+    def get_name(self) -> str:
+        return self.name
+
+    def add_rental(self, rental: Rental):
+        self.rentals.append(rental)
+
+    def statement(self) -> str:
+        result = f"Rental Record for {self.get_name()}\n"
+        total_amount = 0.0
+        frequent_renter_points = 0
+        for rental in self.rentals:
+            frequent_renter_points += rental.get_frequent_renter_points()
+            # Title and charge for this rental
+            result += f"\t{rental.get_movie().get_title()}\t" + f"{rental.get_charge():.2f}".rstrip('0').rstrip('.') + "\n"
+            total_amount += rental.get_charge()
+        result += f"Amount owed is: {total_amount:.2f}".rstrip('0').rstrip('.') + "\n"
+        result += f"You earned: {frequent_renter_points} frequent renter points\n"
+        return result
+
+What changed and why:
+The only behavioral logic moved is the two-line if block. The new method always returns 2 for a new release rented more than one day, and 1 for everything else — identical to what the old code accumulated. Customer no longer needs to know anything about price codes or the new-release bonus rule; it just asks each rental how many points it earned.
+Run your tests now — all existing customer_t.py tests should still pass unchanged since the output of statement() is identical. You should also add a few cases to rental_t.py to cover the new method directly:
+pythondef test_frequent_renter_points_regular(self):
+    rental = Rental(Movie("A", Movie.REGULAR), 5)
+    self.assertEqual(rental.get_frequent_renter_points(), 1)
+
+def test_frequent_renter_points_childrens(self):
+    rental = Rental(Movie("A", Movie.CHILDRENS), 5)
+    self.assertEqual(rental.get_frequent_renter_points(), 1)
+
+def test_frequent_renter_points_new_release_one_day(self):
+    # Only 1 day — no bonus
+    rental = Rental(Movie("A", Movie.NEW_RELEASE), 1)
+    self.assertEqual(rental.get_frequent_renter_points(), 1)
+
+def test_frequent_renter_points_new_release_bonus(self):
+    # More than 1 day — bonus point
+    rental = Rental(Movie("A", Movie.NEW_RELEASE), 2)
+    self.assertEqual(rental.get_frequent_renter_points(), 2)
+These four cases cover the two branches of the new method including the exact boundary at 1 day.
