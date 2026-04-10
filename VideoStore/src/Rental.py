@@ -31,27 +31,9 @@ class Rental:
         """
         return self._movie
 
-    def get_charge(self):
-        """
-        Calculate the rental charge based on the movie's price code and days rented.
-
-        :return: Float representing the rental charge.
-        """
-        this_amount = 0
-        price_code = self.get_movie().get_price_code()
-
-        if price_code == Movie.REGULAR:
-            this_amount += 2
-            if self.get_days_rented() > 2:
-                this_amount += (self.get_days_rented() - 2) * 1.5
-        elif price_code == Movie.NEW_RELEASE:
-            this_amount += self.get_days_rented() * 3
-        elif price_code == Movie.CHILDRENS:
-            this_amount += 1.5
-            if self.get_days_rented() > 3:
-                this_amount += (self.get_days_rented() - 3) * 1.5
-
-        return this_amount
+    def get_charge(self) -> float:
+        """Delegates charge calculation to Movie, passing days rented."""
+        return self._movie.get_charge(self._days)
     
     def get_frequent_renter_points(self) -> int:
         """Returns frequent renter points earned for this rental.
