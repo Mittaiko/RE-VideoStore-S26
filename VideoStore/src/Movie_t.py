@@ -7,52 +7,7 @@ Test program for class Movie.
 
 import unittest
 
-class Movie:
-    """
-    Enum for movie price codes.
-    """
-    REGULAR = 0
-    NEW_RELEASE = 1
-    CHILDRENS = 2
-
-    def __init__(self, title, price_code):
-        """
-        Initialize a Movie object.
-
-        Args:
-            title (str): The title of the movie.
-            price_code (int): The price code of the movie.
-        """
-        self._title = title
-        self._price_code = price_code
-
-    def get_title(self):
-        """
-        Get the title of the movie.
-
-        Returns:
-            str: The title of the movie.
-        """
-        return self._title
-
-    def get_price_code(self):
-        """
-        Get the price code of the movie.
-
-        Returns:
-            int: The price code of the movie.
-        """
-        return self._price_code
-
-    def set_price_code(self, price_code):
-        """
-        Set the price code of the movie.
-
-        Args:
-            price_code (int): The new price code of the movie.
-        """
-        self._price_code = price_code
-
+from Movie import Movie
 
 class TestMovie(unittest.TestCase):
     """
@@ -91,6 +46,26 @@ class TestMovie(unittest.TestCase):
         movie.set_price_code(Movie.REGULAR)
         self.assertEqual(movie.get_price_code(), Movie.REGULAR)
 
+    # new tests for get_charge method
+    def test_get_charge_regular_short(self):
+        movie = Movie("A", Movie.REGULAR)
+        self.assertAlmostEqual(movie.get_charge(1), 2.0)
+
+    def test_get_charge_regular_long(self):
+        movie = Movie("A", Movie.REGULAR)
+        self.assertAlmostEqual(movie.get_charge(4), 5.0)
+
+    def test_get_charge_new_release(self):
+        movie = Movie("A", Movie.NEW_RELEASE)
+        self.assertAlmostEqual(movie.get_charge(3), 9.0)
+
+    def test_get_charge_childrens_boundary(self):
+        movie = Movie("A", Movie.CHILDRENS)
+        self.assertAlmostEqual(movie.get_charge(3), 1.5)
+
+    def test_get_charge_childrens_long(self):
+        movie = Movie("A", Movie.CHILDRENS)
+        self.assertAlmostEqual(movie.get_charge(6), 6.0)
 
 if __name__ == "__main__":
     unittest.main()
