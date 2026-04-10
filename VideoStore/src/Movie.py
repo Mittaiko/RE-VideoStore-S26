@@ -32,4 +32,20 @@ class Movie:
         Setter for movie price code
         """
         self._price_code = new_price_code
+        
+    def get_charge(self, days_rented: int) -> float:
+        """Calculate the rental charge based on this movie's price code
+        and the number of days rented."""
+        this_amount = 0
+        if self._price_code == Movie.REGULAR:
+            this_amount += 2
+            if days_rented > 2:
+                this_amount += (days_rented - 2) * 1.5
+        elif self._price_code == Movie.NEW_RELEASE:
+            this_amount += days_rented * 3
+        elif self._price_code == Movie.CHILDRENS:
+            this_amount += 1.5
+            if days_rented > 3:
+                this_amount += (days_rented - 3) * 1.5
+        return this_amount
 
