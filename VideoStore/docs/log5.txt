@@ -1,0 +1,89 @@
+Me: Here is question 5 which explains a bit for refactoring in the getCharge and class Movie.
+The method getCharge in class Rental accesses more information in class Movie than it does in class Rental. This is a classic symptom of a method that is in the wrong place. Perform a Move Method refactoring to move the functionality of the method getCharge into a new method of the same name in the class Movie. Leave the method getCharge in class Rental and have it call the new method in class Movie. It will be necessary to pass the number of days rented.9:05 PMLooking at Rental.get_charge(), it calls self.get_movie().get_price_code() to do all its work — it only uses self._days from Rental itself. That's the classic symptom the question describes. The fix is to move the pricing logic into Movie where it belongs, and have Rental.get_charge() just delegate to it.
+Agent: Here are the two files that change:
+Movie.py — add the new get_charge() method:
+python# Movie.py
+class Movie:
+    # Class constants for price codes
+    REGULAR = 0
+    NEW_RELEASE = 1
+    CHILDRENS = 2
+
+    def __init__(self, title, price_code):
+        self._title = title
+        self._price_code = price_code
+
+    def get_title(self):
+        return self._title
+
+    def get_price_code(self):
+        return self._price_code
+
+    def set_price_code(self, new_price_code):
+        self._price_code = new_price_code
+
+    def get_charge(self, days_rented: int) -> float:
+        """Calculate the rental charge based on this movie's price code
+        and the number of days rented."""
+        this_amount = 0
+        if self._price_code == Movie.REGULAR:
+            this_amount += 2
+            if days_rented > 2:
+                this_amount += (days_rented - 2) * 1.5
+        elif self._price_code == Movie.NEW_RELEASE:
+            this_amount += days_rented * 3
+        elif self._price_code == Movie.CHILDRENS:
+            this_amount += 1.5
+            if days_rented > 3:
+                this_amount += (days_rented - 3) * 1.5
+        return this_amount
+Rental.py — delegate to Movie.get_charge(), keeping the method in place:
+python# Rental.py
+from Movie import Movie
+
+class Rental:
+    def __init__(self, movie, days_rented):
+        self._movie = movie
+        self._days = days_rented
+
+    def get_days_rented(self):
+        return self._days
+
+    def get_movie(self):
+        return self._movie
+
+    def get_charge(self) -> float:
+        """Delegates charge calculation to Movie, passing days rented."""
+        return self._movie.get_charge(self._days)
+
+    def get_frequent_renter_points(self) -> int:
+        """Returns frequent renter points earned for this rental.
+        New releases rented for more than one day earn a bonus point."""
+        if self._movie.get_price_code() == Movie.NEW_RELEASE and self._days > 1:
+            return 2
+        return 1
+
+What changed and why:
+The entire pricing logic now lives in Movie.get_charge(days_rented) where it belongs — Movie owns the price code, so it should own the rules about what that price code means. Rental.get_charge() becomes a one-liner that simply passes self._days across to the movie and returns the result.
+Notice get_frequent_renter_points() in Rental also got slightly cleaned up — it now accesses self._movie and self._days directly rather than going through the getter methods, which is fine since it's inside the class. This is a minor tidying, not a required change, so note it in your answer file if you keep it.
+Run all your tests now — movie_t.py, rental_t.py, and customer_t.py should all still pass. You should also add a couple of cases to movie_t.py to directly test the new method:
+pythondef test_get_charge_regular_short(self):
+    movie = Movie("A", Movie.REGULAR)
+    self.assertAlmostEqual(movie.get_charge(1), 2.0)
+
+def test_get_charge_regular_long(self):
+    movie = Movie("A", Movie.REGULAR)
+    self.assertAlmostEqual(movie.get_charge(4), 5.0)
+
+def test_get_charge_new_release(self):
+    movie = Movie("A", Movie.NEW_RELEASE)
+    self.assertAlmostEqual(movie.get_charge(3), 9.0)
+
+def test_get_charge_childrens_boundary(self):
+    movie = Movie("A", Movie.CHILDRENS)
+    self.assertAlmostEqual(movie.get_charge(3), 1.5)
+
+def test_get_charge_childrens_long(self):
+    movie = Movie("A", Movie.CHILDRENS)
+    self.assertAlmostEqual(movie.get_charge(6), 6.0)
+These test Movie.get_charge() directly, independent of Rental, which is important — after this refactoring Movie owns the logic so it should own the tests for it too.
