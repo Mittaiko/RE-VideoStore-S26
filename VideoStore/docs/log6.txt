@@ -1,0 +1,145 @@
+Me: Here is question 6 about abstract class and price code:
+When creating a hierarchy for common behavior, it is common to use an abstract class that does not have any implementation for its methods. It serves as the base class for a hierarchy. Add an abstract class Price in Movie. This will serve as a base class for new classes and is the start of the Replace Type Code with State/Strategy Refactoring
+(Currently the price code is an int. We will need to move from an int to type Price later. Nothing to change yet.)
+Define in Movie the following classes: RegularPrice, ChildrensPrice, and NewReleasePrice. Have all of them inherit from the class Price.
+Declare a pure virtual method getPriceCode in class Price. Define a virtual method getPriceCode in each of the subclasses that returns the corresponding category (e.g., Movie::CHILDREN for the class ChildrensPrice).
+(Note: Pure virtual functions are not supported in Python but you can mimic it. Think about how you would do it.)
+
+
+Agent: This is all contained within Movie.py — no other files change. The question is asking you to set up the Strategy pattern foundation by replacing the integer type code with a class hierarchy.
+
+Movie.py:
+
+python
+# Movie.py
+from abc import ABC, abstractmethod
+
+class Price(ABC):
+    """Abstract base class for movie pricing strategies."""
+
+    @abstractmethod
+    def get_price_code(self) -> int:
+        """Pure virtual method — subclasses must implement this."""
+        raise NotImplementedError("Subclasses must implement get_price_code()")
+
+
+class RegularPrice(Price):
+    def get_price_code(self) -> int:
+        return Movie.REGULAR
+
+
+class NewReleasePrice(Price):
+    def get_price_code(self) -> int:
+        return Movie.NEW_RELEASE
+
+
+class ChildrensPrice(Price):
+    def get_price_code(self) -> int:
+        return Movie.CHILDRENS
+
+
+class Movie:
+    # Class constants for price codes
+    REGULAR = 0
+    NEW_RELEASE = 1
+    CHILDRENS = 2
+
+    def __init__(self, title, price_code):
+        self._title = title
+        self._price_code = price_code
+
+    def get_title(self):
+        return self._title
+
+    def get_price_code(self):
+        return self._price_code
+
+    def set_price_code(self, new_price_code):
+        self._price_code = new_price_code
+
+    def get_charge(self, days_rented: int) -> float:
+        """Calculate the rental charge based on this movie's price code
+        and the number of days rented."""
+        this_amount = 0
+        if self._price_code == Movie.REGULAR:
+            this_amount += 2
+            if days_rented > 2:
+                this_amount += (days_rented - 2) * 1.5
+        elif self._price_code == Movie.NEW_RELEASE:
+            this_amount += days_rented * 3
+        elif self._price_code == Movie.CHILDRENS:
+            this_amount += 1.5
+            if days_rented > 3:
+                this_amount += (days_rented - 3) * 1.5
+        return this_amount
+What changed and why:
+
+Price uses Python's abc module to mimic a pure virtual class — ABC as the base and @abstractmethod on get_price_code() means Python will raise a TypeError at instantiation time if any subclass forgets to implement it, which is as close as Python gets to a compile-time pure virtual enforcement.
+
+The raise NotImplementedError inside the method body is a second layer of safety — if somehow the abstract enforcement is bypassed, calling the method still fails loudly rather than silently returning None.
+
+RegularPrice, NewReleasePrice, and ChildrensPrice are defined before Movie in the file because they reference Movie.REGULAR, Movie.NEW_RELEASE, and Movie.CHILDRENS — wait, actually that creates a forward reference problem. Since the subclasses reference Movie constants but Movie isn't defined yet at that point in the file, let's fix that by using the raw integer values in the subclasses for now, matching what the constants resolve to, since the question explicitly says nothing to change yet regarding the int-to-Price transition:
+
+python
+# Movie.py
+from abc import ABC, abstractmethod
+
+
+class Price(ABC):
+    """Abstract base class for movie pricing strategies."""
+
+    @abstractmethod
+    def get_price_code(self) -> int:
+        """Pure virtual method — subclasses must implement this."""
+        raise NotImplementedError("Subclasses must implement get_price_code()")
+
+
+class RegularPrice(Price):
+    def get_price_code(self) -> int:
+        return 0  # Movie.REGULAR
+
+
+class NewReleasePrice(Price):
+    def get_price_code(self) -> int:
+        return 1  # Movie.NEW_RELEASE
+
+
+class ChildrensPrice(Price):
+    def get_price_code(self) -> int:
+        return 2  # Movie.CHILDRENS
+
+
+class Movie:
+    # Class constants for price codes
+    REGULAR = 0
+    NEW_RELEASE = 1
+    CHILDRENS = 2
+
+    def __init__(self, title, price_code):
+        self._title = title
+        self._price_code = price_code
+
+    def get_title(self):
+        return self._title
+
+    def get_price_code(self):
+        return self._price_code
+
+    def set_price_code(self, new_price_code):
+        self._price_code = new_price_code
+
+    def get_charge(self, days_rented: int) -> float:
+        """Calculate the rental charge based on this movie's price code
+        and the number of days rented."""
+        this_amount = 0
+        if self._price_code == Movie.REGULAR:
+            this_amount += 2
+            if days_rented > 2:
+                this_amount += (days_rented - 2) * 1.5
+        elif self._price_code == Movie.NEW_RELEASE:
+            this_amount += days_rented * 3
+        elif self._price_code == Movie.CHILDRENS:
+            this_amount += 1.5
+            if days_rented > 3:
+                this_amount += (days_rented - 3) * 1.5
+        return this_amount
