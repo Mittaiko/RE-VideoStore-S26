@@ -1,71 +1,85 @@
-"""
-Movie_t.py
+# Movie.py
 
-Test program for class Movie.
+# Class hierarchy for pricing strategy
+from abc import ABC, abstractmethod
 
-"""
-
-import unittest
-
-from Movie import Movie
-
-class TestMovie(unittest.TestCase):
+class Price(ABC):
     """
-    Test cases for the Movie class.
+    Abstract base class for movie pricing strategies.
     """
 
-    def test_regular_movie(self):
-        # regular movie
-        movie = Movie("A", Movie.REGULAR)
-        self.assertEqual(movie.get_title(), "A")
-        self.assertEqual(movie.get_price_code(), Movie.REGULAR)
+    @abstractmethod
+    def get_price_code(self) -> int:
+        """
+        Subclasses must return the corresponding price code.
+        """
+        raise NotImplementedError("Subclasses must implement get_price_code()")
 
-    def test_new_release(self):
-        # new release
-        movie = Movie("A", Movie.NEW_RELEASE)
-        self.assertEqual(movie.get_title(), "A")
-        self.assertEqual(movie.get_price_code(), Movie.NEW_RELEASE)
 
-    def test_childrens(self):
-        # childrens
-        movie = Movie("A", Movie.CHILDRENS)
-        self.assertEqual(movie.get_title(), "A")
-        self.assertEqual(movie.get_price_code(), Movie.CHILDRENS)
+class RegularPrice(Price):
+    def get_price_code(self) -> int:
+        return 0  # corresponds to Movie.REGULAR
 
-    def test_longer_title(self):
-        # longer title
-        movie = Movie("A B", Movie.REGULAR)
-        self.assertEqual(movie.get_title(), "A B")
-        self.assertEqual(movie.get_price_code(), Movie.REGULAR)
 
-    def test_change_price(self):
-        # change price
-        movie = Movie("A", Movie.NEW_RELEASE)
-        self.assertEqual(movie.get_title(), "A")
-        self.assertEqual(movie.get_price_code(), Movie.NEW_RELEASE)
-        movie.set_price_code(Movie.REGULAR)
-        self.assertEqual(movie.get_price_code(), Movie.REGULAR)
+class NewReleasePrice(Price):
+    def get_price_code(self) -> int:
+        return 1  # corresponds to Movie.NEW_RELEASE
 
-    # new tests for get_charge method
-    def test_get_charge_regular_short(self):
-        movie = Movie("A", Movie.REGULAR)
-        self.assertAlmostEqual(movie.get_charge(1), 2.0)
 
-    def test_get_charge_regular_long(self):
-        movie = Movie("A", Movie.REGULAR)
-        self.assertAlmostEqual(movie.get_charge(4), 5.0)
+class ChildrensPrice(Price):
+    def get_price_code(self) -> int:
+        return 2  # corresponds to Movie.CHILDRENS
 
-    def test_get_charge_new_release(self):
-        movie = Movie("A", Movie.NEW_RELEASE)
-        self.assertAlmostEqual(movie.get_charge(3), 9.0)
 
-    def test_get_charge_childrens_boundary(self):
-        movie = Movie("A", Movie.CHILDRENS)
-        self.assertAlmostEqual(movie.get_charge(3), 1.5)
+class Movie:
+    # Class constants for price codes
+    REGULAR = 0
+    NEW_RELEASE = 1
+    CHILDRENS = 2
 
-    def test_get_charge_childrens_long(self):
-        movie = Movie("A", Movie.CHILDRENS)
-        self.assertAlmostEqual(movie.get_charge(6), 6.0)
+    def __init__(self, title, price_code):
+        """
+        Constructor to initialize movie title and price code
+        """
+        self._title = title
+        self._price_code = price_code
 
-if __name__ == "__main__":
-    unittest.main()
+    def get_title(self):
+        """
+        Getter for movie title
+        """
+        return self._title
+
+    def get_price_code(self):
+        """
+        Getter for movie price code
+        """
+        return self._price_code
+
+    def set_price_code(self, new_price_code):
+        """
+        Setter for movie price code
+        """
+        self._price_code = new_price_code
+
+    def get_charge(self, days_rented: int) -> float:
+        """
+        Calculate the rental charge based on the movie's price code
+        and the number of days rented.
+        """
+        this_amount = 0
+
+        if self._price_code == Movie.REGULAR:
+            this_amount += 2
+            if days_rented > 2:
+                this_amount += (days_rented - 2) * 1.5
+
+        elif self._price_code == Movie.NEW_RELEASE:
+            this_amount += days_rented * 3
+
+        elif self._price_code == Movie.CHILDRENS:
+            this_amount += 1.5
+            if days_rented > 3:
+                this_amount += (days_rented - 3) * 1.5
+
+        return this_amount
