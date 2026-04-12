@@ -1,0 +1,87 @@
+Me: Construct a UML class diagram that represents the design of the system in its FINAL state. Make sure to include all the relationships. Save your diagram (both source and graphic) in the "final class diagram" subfolder under the docs folder. For e.g. if you use PlantUML, make sure you put the diagram code and the final generated png/image file in the folder. I recommend PlantUML to do this exercise.
+
+Agent: Here is the PlantUML source for your final_class_diagram.puml file, followed by the rendered diagram:
+plantuml@startuml VideoStore_Final
+
+skinparam classAttributeIconSize 0
+
+abstract class Price {
+  + {abstract} get_price_code(): int
+}
+
+class RegularPrice {
+  + get_price_code(): int
+}
+
+class NewReleasePrice {
+  + get_price_code(): int
+}
+
+class ChildrensPrice {
+  + get_price_code(): int
+}
+
+class Movie {
+  + {static} REGULAR: int = 0
+  + {static} NEW_RELEASE: int = 1
+  + {static} CHILDRENS: int = 2
+  - _title: str
+  - _price_code: Price
+  - _PRICE_MAP: dict
+  + __init__(title: str, price_code: int)
+  + get_title(): str
+  + get_price_code(): int
+  + set_price_code(new_price_code: int): void
+  + get_charge(days_rented: int): float
+}
+
+class Rental {
+  - _movie: Movie
+  - _days: int
+  + __init__(movie: Movie, days_rented: int)
+  + get_days_rented(): int
+  + get_movie(): Movie
+  + get_charge(): float
+  + get_frequent_renter_points(): int
+}
+
+class Customer {
+  - name: str
+  - rentals: List[Rental]
+  + __init__(name: str)
+  + get_name(): str
+  + add_rental(rental: Rental): void
+  + statement(): str
+  - __get_total_charge(): float
+}
+
+Price <|-- RegularPrice
+Price <|-- NewReleasePrice
+Price <|-- ChildrensPrice
+
+Movie "1" *-- "1" Price : has >
+Customer "1" o-- "0..*" Rental : has >
+Rental "1" --> "1" Movie : references >
+
+@enduml
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.25s;
+    animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+  }
+VvisualizeVvisualize show_widgetHere's what changed from the initial diagram and why each relationship is drawn the way it is:
+New elements:
+
+Price is marked «abstract» with get_price_code() in italics to signal it cannot be instantiated
+RegularPrice, NewReleasePrice, and ChildrensPrice all inherit from Price with hollow-triangle arrows
+Movie now holds a _price_code: Price instead of _price_code: int
+
+Relationships:
+
+Price ◄── subclasses — inheritance (hollow triangle), three subclasses all extend Price
+Movie ◆── Price — composition (filled diamond), not aggregation. A Movie owns exactly one Price object and manages its lifecycle entirely through set_price_code(). The Price object has no meaning outside its Movie
+Customer ◇── Rental — aggregation (open diamond), unchanged from initial
+Rental ──► Movie — directed association, unchanged from initial, but now Movie has gained get_charge(days)
+
+The PlantUML source above is what you save as docs/final class diagram/final_class_diagram.puml, and you'd run PlantUML to generate the .png to save alongside it.
