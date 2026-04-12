@@ -1,0 +1,12 @@
+Me:here is question 10:
+Generate acceptance criteria for the VideoStore based on the requirements you generate in the previous question. Typically this is done apriori but we are doing this after the fact.Save all the criteria in the acceptanceCriteria.md file with the docs subfolder.
+For each acceptance criteria list, make sure there is an appropriate test in place to run and test if it holds.
+
+Agent: *inserted acceptance criteria file* Created a file, read a fileCreated a file, read a fileSave this as docs/acceptanceCriteria.md in your repo. Here's what to evaluate and note in your question file:
+Structure of each criterion — every AC follows the standard Given/When/Then format, maps back to a specific FR-x.x from requirements.md, and points to an existing or new test. This is the traceability chain the professor is looking for.
+9 new tests are specified — these are the gaps found when mapping every requirement to existing tests. The most important ones are:
+
+test_invalid_price_code_unchanged — the existing test only checks that a ValueError is raised, but doesn't confirm the movie's category was left untouched after the bad call
+test_charge_formatting — the .txt file comparisons implicitly test formatting, but this test makes the formatting rule explicit and independently verifiable
+test_days_rented_immutable — verifies the absence of a setter, which is a design intent that no existing test checked
+test_zero_days_no_crash — AC-6.3 is unusual because it documents known undefined behaviour. The test just confirms the system doesn't crash, which is the right approach when a constraint says validation is the caller's responsibility
