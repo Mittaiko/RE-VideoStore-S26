@@ -93,6 +93,25 @@ class TestMovie(unittest.TestCase):
         self.assertIsInstance(NewReleasePrice(), Price)
         self.assertIsInstance(ChildrensPrice(), Price)
     
+    # tests for Movie's set_price_code method
+    def test_invalid_price_code(self):
+        # set_price_code should raise ValueError for unknown codes
+        movie = Movie("A", Movie.REGULAR)
+        with self.assertRaises(ValueError):
+            movie.set_price_code(99)
+
+    def test_set_price_code_changes_correctly(self):
+        # Verify switching price codes works through the new Price objects
+        movie = Movie("A", Movie.NEW_RELEASE)
+        self.assertEqual(movie.get_price_code(), Movie.NEW_RELEASE)
+        movie.set_price_code(Movie.REGULAR)
+        self.assertEqual(movie.get_price_code(), Movie.REGULAR)
+
+    def test_price_code_type_is_price(self):
+        # Internal _price_code should now be a Price object, not an int
+        movie = Movie("A", Movie.CHILDRENS)
+        self.assertIsInstance(movie._price_code, Price)
+        
 
 if __name__ == "__main__":
     unittest.main()
