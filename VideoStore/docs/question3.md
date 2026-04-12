@@ -2,7 +2,7 @@
 Determining the frequent renter points should probably be a responsibility of class ```Rental``` rather than class ```Customer```.  Using a _Extract method_ refactoring, create a new method ```getFrequentRenterPoints``` in class ```Rental``` and call it in method ```statement``` to get the frequent renter points.
 
 
-**Start Day/Time:**  04/09/2026
+**Start Day/Time:**  04/09/2026 4:41pm
 
 **How did you decide whether the AI’s output was useful, accurate, or appropriate?**
 
