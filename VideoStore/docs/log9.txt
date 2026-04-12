@@ -1,0 +1,14 @@
+Me:here is question 9:
+Nobody wrote requirements of any kind for this application. To facilitate handoff to someone who needs to understand what this system does, generate a set of functional requirements for the VideoStore. Save all the requirements in the requirements.md file within the docs subfolder.
+
+
+Agent: *created a file* Save this as docs/requirements.md in your repo. Here's what to note for your question file when evaluating this output:
+
+What I based each section on:
+
+Section 1 (Movies) — drawn from Movie.py: the three constants, the constructor, set_price_code(), and the ValueError guard added in question 7.
+Section 2 (Rentals) — drawn from Rental.__init__() and Customer.add_rental(). The immutability of days rented is implicit in the code — there's no setter for _days.
+Section 3 (Charges) — the pricing table is derived directly from the if/elif logic in Movie.get_charge(), including the exact thresholds and per-day rates.
+Section 4 (Points) — from Rental.get_frequent_renter_points() after your question 3 refactoring.
+Section 5 (Statement) — from Customer.statement(), including the exact format strings and the no-rental edge case from Customer_t.norental.txt.
+Section 6 (Constraints) — these are things the code doesn't do that a future developer would need to know: no persistence, no ID system, no rental removal, no input validation on days.
