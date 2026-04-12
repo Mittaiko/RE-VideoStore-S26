@@ -1,7 +1,7 @@
 ## Question 1
 Read the code over and construct a UML class diagram that represents the design of the system in it’s INITIAL state.  Make sure to include all the relationships.  Save your diagram (both source and graphic) in the "initial class diagram" subfolder under the docs folder.  For e.g. if you use PlantUML, make sure you put the diagram code and the final generated png/image file in the folder. I recommend PlantUML to do this exercise. 
 
-**Start Day/Time:**  enter date and time here
+**Start Day/Time:**  04/08/2026 8:10pm
 
 **How did you decide whether the AI’s output was useful, accurate, or appropriate?**
 
