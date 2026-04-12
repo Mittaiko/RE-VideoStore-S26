@@ -1,0 +1,115 @@
+Me: this is question 7:
+Now we need to make the changes that will use our new types for the method price_code in Movie. Perform a type change.
+Change the type of the variable price_code to Price
+Change the method setPriceCode to set the variable price_code to a new instance of the correct Price object using a switch or equivalent data structure in Python.
+Change the method getPriceCode to call the method getPriceCode on the Price object and return that value.
+
+Agent: This is all contained within Movie.py again. The key shift here is that _price_code stops being an int and becomes a Price object — but the public interface (get_price_code() still returns an int) stays the same so nothing else breaks.
+Movie.py:
+python# Movie.py
+from abc import ABC, abstractmethod
+
+
+class Price(ABC):
+    """Abstract base class for movie pricing strategies."""
+
+    @abstractmethod
+    def get_price_code(self) -> int:
+        """Pure virtual method — subclasses must implement this."""
+        raise NotImplementedError("Subclasses must implement get_price_code()")
+
+
+class RegularPrice(Price):
+    def get_price_code(self) -> int:
+        return 0  # Movie.REGULAR
+
+
+class NewReleasePrice(Price):
+    def get_price_code(self) -> int:
+        return 1  # Movie.NEW_RELEASE
+
+
+class ChildrensPrice(Price):
+    def get_price_code(self) -> int:
+        return 2  # Movie.CHILDRENS
+
+
+class Movie:
+    # Class constants for price codes
+    REGULAR = 0
+    NEW_RELEASE = 1
+    CHILDRENS = 2
+
+    # Maps integer price codes to their corresponding Price objects
+    _PRICE_MAP = None
+
+    @classmethod
+    def _get_price_map(cls) -> dict:
+        """Lazily initialise the price map after all classes are defined."""
+        if cls._PRICE_MAP is None:
+            cls._PRICE_MAP = {
+                cls.REGULAR:      RegularPrice(),
+                cls.NEW_RELEASE:  NewReleasePrice(),
+                cls.CHILDRENS:    ChildrensPrice(),
+            }
+        return cls._PRICE_MAP
+
+    def __init__(self, title: str, price_code: int):
+        self._title = title
+        self._price_code: Price = None
+        self.set_price_code(price_code)  # use setter to convert int -> Price
+
+    def get_title(self) -> str:
+        return self._title
+
+    def get_price_code(self) -> int:
+        """Returns the integer price code by delegating to the Price object."""
+        return self._price_code.get_price_code()
+
+    def set_price_code(self, new_price_code: int):
+        """Converts the integer price code to the correct Price object."""
+        price_map = self._get_price_map()
+        if new_price_code not in price_map:
+            raise ValueError(f"Invalid price code: {new_price_code}")
+        self._price_code = price_map[new_price_code]
+
+    def get_charge(self, days_rented: int) -> float:
+        """Calculate the rental charge based on this movie's price code
+        and the number of days rented."""
+        this_amount = 0
+        if self.get_price_code() == Movie.REGULAR:
+            this_amount += 2
+            if days_rented > 2:
+                this_amount += (days_rented - 2) * 1.5
+        elif self.get_price_code() == Movie.NEW_RELEASE:
+            this_amount += days_rented * 3
+        elif self.get_price_code() == Movie.CHILDRENS:
+            this_amount += 1.5
+            if days_rented > 3:
+                this_amount += (days_rented - 3) * 1.5
+        return this_amount
+
+What changed and why:
+_price_code is now a Price object instead of an int. The conversion happens inside set_price_code() using a dictionary (_PRICE_MAP) as Python's equivalent of a switch statement — it maps each integer constant to the correct Price subclass instance.
+The _PRICE_MAP is initialised lazily via _get_price_map() rather than at class definition time. This is necessary because RegularPrice, NewReleasePrice, and ChildrensPrice are defined before Movie in the file, but the map uses Movie.REGULAR etc. as keys — lazy initialisation ensures Movie is fully defined before the map is built, avoiding any forward reference issues.
+get_price_code() now delegates to self._price_code.get_price_code() rather than returning the raw integer directly. The return value is still an int though, so Rental, Customer, and all tests see absolutely no difference in behaviour.
+__init__ now calls self.set_price_code(price_code) rather than assigning directly — this ensures the conversion from int to Price always goes through the same path whether you're constructing or updating a movie.
+Run all your tests — everything should still pass since the public interface is unchanged. You should add one new test to movie_t.py to cover the invalid price code guard:
+pythondef test_invalid_price_code(self):
+    # set_price_code should raise ValueError for unknown codes
+    movie = Movie("A", Movie.REGULAR)
+    with self.assertRaises(ValueError):
+        movie.set_price_code(99)
+
+def test_set_price_code_changes_correctly(self):
+    # Verify switching price codes works through the new Price objects
+    movie = Movie("A", Movie.NEW_RELEASE)
+    self.assertEqual(movie.get_price_code(), Movie.NEW_RELEASE)
+    movie.set_price_code(Movie.REGULAR)
+    self.assertEqual(movie.get_price_code(), Movie.REGULAR)
+
+def test_price_code_type_is_price(self):
+    # Internal _price_code should now be a Price object, not an int
+    movie = Movie("A", Movie.CHILDRENS)
+    self.assertIsInstance(movie._price_code, Price)
+The test_price_code_type_is_price test is particularly useful here — it directly verifies that the internal representation has actually changed to a Price object, which is the whole point of this refactoring.
